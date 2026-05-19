@@ -13,5 +13,9 @@ def create_room(chat_id):
 
         "active_mission": None,
 
-        "mission_lock": False
-    }
+        "mission_lock": False,
+
+        "scores": {},
+        
+        "endgame_votes": {"yes": [], "no": []}  # ← เพิ่ม
+}
