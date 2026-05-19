@@ -40,3 +40,9 @@ async def claim_callback(
         "🎭 MISSION CLAIMED\n\n"
         "⏳ ส่งรูปหรือคลิป"
     )
+    
+     room["scores"][user.id] = room["scores"].get(
+    user.id,
+    {"name": user.first_name, "count": 0}
+)
+     room["scores"][user.id]["count"] += 1
