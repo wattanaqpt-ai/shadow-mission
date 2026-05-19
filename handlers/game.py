@@ -16,14 +16,15 @@ async def startgame(
     if chat_id in rooms:
 
         await update.message.reply_text(
-            "❌ เกมเปิดอยู่แล้ว"
+            "❌ มีเกมอยู่แล้ว"
         )
         return
 
     create_room(chat_id)
 
     await update.message.reply_text(
+
         "🎭 SHADOW MISSION\n\n"
         "/join master\n"
-        "/join player"
+        "/join slave"
     )
