@@ -1,4 +1,5 @@
 rooms = {}
+
 def create_room(chat_id):
 
     rooms[chat_id] = {
@@ -6,7 +7,7 @@ def create_room(chat_id):
         "started": False,
 
         "masters": [],
-        "players": [],
+        "slaves": [],
 
         "master_turn": 0,
 
