@@ -1,8 +1,12 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
+
 from core.rooms import rooms
 
-async def endgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def endgame(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE
+):
     chat_id = update.effective_chat.id
     room = rooms.get(chat_id)
 
@@ -14,7 +18,6 @@ async def endgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ เกมยังไม่เริ่ม")
         return
 
-    # reset คะแนนโหวต endgame
     room["endgame_votes"] = {"yes": [], "no": []}
 
     keyboard = [[
@@ -24,12 +27,15 @@ async def endgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(
         "🏳️ มีการเสนอยุติเกม!\n\n"
-        "ฝั่ง Player โหวตกันเลย",
+        "ฝั่ง Slave โหวตกันเลย",
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
 
-async def endgame_vote_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def endgame_vote_callback(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE
+):
     query = update.callback_query
     await query.answer()
 
@@ -40,16 +46,14 @@ async def endgame_vote_callback(update: Update, context: ContextTypes.DEFAULT_TY
     if not room:
         return
 
-    # เฉพาะ player เท่านั้นที่โหวตได้
-    player_ids = [p["id"] for p in room["players"]]
-    if user.id not in player_ids:
-        await query.answer("❌ เฉพาะ Player เท่านั้น", show_alert=True)
+    slave_ids = [s["id"] for s in room["slaves"]]
+    if user.id not in slave_ids:
+        await query.answer("❌ เฉพาะ Slave เท่านั้น", show_alert=True)
         return
 
     votes = room["endgame_votes"]
     vote_type = query.data.replace("endvote_", "")
 
-    # ลบโหวตเดิมของคนนี้ออกก่อน
     votes["yes"] = [v for v in votes["yes"] if v != user.id]
     votes["no"] = [v for v in votes["no"] if v != user.id]
 
@@ -57,8 +61,8 @@ async def endgame_vote_callback(update: Update, context: ContextTypes.DEFAULT_TY
 
     yes_count = len(votes["yes"])
     no_count = len(votes["no"])
-    total_players = len(room["players"])
-    majority = total_players // 2 + 1
+    total_slaves = len(room["slaves"])
+    majority = total_slaves // 2 + 1
 
     await query.edit_message_text(
         f"🏳️ โหวตยุติเกม\n\n"
@@ -69,7 +73,6 @@ async def endgame_vote_callback(update: Update, context: ContextTypes.DEFAULT_TY
     )
 
     if yes_count >= majority:
-        # จบเกม
         scores = room.get("scores", {})
         sorted_scores = sorted(
             scores.values(),
@@ -87,7 +90,7 @@ async def endgame_vote_callback(update: Update, context: ContextTypes.DEFAULT_TY
         await context.bot.send_message(
             chat_id=chat_id,
             text=(
-                f"🏁 GAME OVER — ฝั่ง Player ยอมแพ้!\n\n"
+                f"🏁 GAME OVER — ฝั่ง Slave ยอมแพ้!\n\n"
                 f"🎯 สถิติภารกิจ\n{score_text}\n"
                 f"——————————\n"
                 f"ขอบคุณทุกคนที่ร่วมเล่น!"
