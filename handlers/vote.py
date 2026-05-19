@@ -1,0 +1,85 @@
+from telegram import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Update
+)
+
+from telegram.ext import ContextTypes
+
+from core.rooms import rooms
+from core.turns import next_master
+
+async def start_vote(
+    context,
+    chat_id
+):
+
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                "✅ PASS",
+                callback_data="vote_pass"
+            ),
+
+            InlineKeyboardButton(
+                "❌ FAIL",
+                callback_data="vote_fail"
+            ),
+
+            InlineKeyboardButton(
+                "😂 FUNNY",
+                callback_data="vote_funny"
+            )
+        ]
+    ]
+
+    reply_markup = InlineKeyboardMarkup(
+        keyboard
+    )
+
+    await context.bot.send_message(
+        chat_id=chat_id,
+        text="🗳 RESULT?",
+        reply_markup=reply_markup
+    )
+
+async def vote_callback(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE
+):
+
+    query = update.callback_query
+
+    await query.answer()
+
+    chat_id = query.message.chat.id
+
+    room = rooms.get(chat_id)
+
+    if not room:
+        return
+
+    mission = room["active_mission"]
+
+    if not mission:
+        return
+
+    # vote type
+    vote_type = query.data.replace(
+        "vote_",
+        ""
+    )
+
+    mission["votes"][vote_type] += 1
+
+    # แสดงคะแนน
+    votes = mission["votes"]
+
+    text = (
+        "🗳 CURRENT VOTES\n\n"
+        f"✅ PASS: {votes['pass']}\n"
+        f"❌ FAIL: {votes['fail']}\n"
+        f"😂 FUNNY: {votes['funny']}"
+    )
+
+    await query.edit_message_text(text)
