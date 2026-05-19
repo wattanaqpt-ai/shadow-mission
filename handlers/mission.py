@@ -4,12 +4,9 @@ from telegram import (
     InlineKeyboardMarkup
 )
 
-from telegram.ext import (
-    ContextTypes
-)
+from telegram.ext import ContextTypes
 
 from core.rooms import rooms
-from core.missions import create_mission
 from core.turns import get_current_master
 
 async def mission(
@@ -20,15 +17,15 @@ async def mission(
     chat_id = update.effective_chat.id
     user = update.effective_user
 
-    if chat_id not in rooms:
+    room = rooms.get(chat_id)
+
+    if not room:
         return
 
-    room = rooms[chat_id]
-
-    if room["mission_lock"]:
+    if not room["started"]:
 
         await update.message.reply_text(
-            "⚠️ มีภารกิจอยู่แล้ว"
+            "❌ เกมยังไม่เริ่ม"
         )
         return
 
@@ -37,19 +34,30 @@ async def mission(
     if user.id != current_master["id"]:
 
         await update.message.reply_text(
-            "❌ ไม่ใช่ turn ของคุณ"
+            "❌ ยังไม่ใช่ TURN ของคุณ"
         )
         return
 
     text = " ".join(context.args)
 
-    mission_data = create_mission(
-        text,
-        user.id
-    )
+    if not text:
 
-    room["active_mission"] = mission_data
-    room["mission_lock"] = True
+        await update.message.reply_text(
+            "/mission ข้อความ"
+        )
+        return
+
+    room["active_mission"] = {
+
+        "text": text,
+        "claimed": False,
+        "claimed_by": None,
+        "votes": {
+            "pass": 0,
+            "fail": 0,
+            "funny": 0
+        }
+    }
 
     keyboard = [
         [
@@ -65,6 +73,7 @@ async def mission(
     )
 
     await update.message.reply_text(
-        f"🃏 NEW MISSION\n\n📜 {text}",
+
+        f"🃏 {text}",
         reply_markup=reply_markup
     )
