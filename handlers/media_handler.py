@@ -1,10 +1,12 @@
 import asyncio
 
 from telegram import Update
-from telegram.ext import ContextTypes, filters
+from telegram.ext import ContextTypes
 
 from core.rooms import rooms
 from core.media import auto_delete
+
+from handlers.vote import start_vote
 
 async def media_handler(
     update: Update,
@@ -24,29 +26,24 @@ async def media_handler(
     if not mission:
         return
 
-    # รับเฉพาะคน claim
     if user.id != mission["claimed_by"]:
         return
 
-    # PHOTO
+    repost = None
+
     if update.message.photo:
 
         file_id = update.message.photo[-1].file_id
 
-        # ลบต้นฉบับ
         await update.message.delete()
 
-        # repost
         repost = await context.bot.send_photo(
             chat_id=chat_id,
             photo=file_id,
-            caption=(
-                "🎭 MISSION RESPONSE\n"
-                "⏳ Auto delete in 2 minutes"
-            )
+            caption="🎭 MISSION RESPONSE",
+            protect_content=True
         )
 
-    # VIDEO
     elif update.message.video:
 
         file_id = update.message.video.file_id
@@ -56,19 +53,13 @@ async def media_handler(
         repost = await context.bot.send_video(
             chat_id=chat_id,
             video=file_id,
-            caption=(
-                "🎭 MISSION RESPONSE\n"
-                "⏳ Auto delete in 2 minutes"
-            )
+            caption="🎭 MISSION RESPONSE",
+            protect_content=True
         )
 
     else:
         return
 
-    # save repost id
-    mission["media_message_id"] = repost.message_id
-
-    # auto delete
     asyncio.create_task(
         auto_delete(
             context,
@@ -77,7 +68,6 @@ async def media_handler(
         )
     )
 
-    # เปิด vote
     await start_vote(
         context,
         chat_id
