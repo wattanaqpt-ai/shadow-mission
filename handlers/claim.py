@@ -25,7 +25,6 @@ async def claim_callback(
     if not mission:
         return
 
-    # มีคนรับแล้ว
     if mission["claimed"]:
 
         await query.answer(
@@ -34,11 +33,10 @@ async def claim_callback(
         )
         return
 
-    # lock mission
     mission["claimed"] = True
     mission["claimed_by"] = user.id
 
     await query.edit_message_text(
-        f"🎭 MISSION CLAIMED\n\n"
-        f"⏳ รอส่งรูป/คลิป"
+        "🎭 MISSION CLAIMED\n\n"
+        "⏳ ส่งรูปหรือคลิป"
     )
