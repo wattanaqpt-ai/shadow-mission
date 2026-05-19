@@ -8,19 +8,19 @@ from telegram.ext import (
 
 from config import TOKEN
 
-# handlers
 from handlers.game import startgame
 from handlers.join import join
+from handlers.begin import begin
 from handlers.mission import mission
 
 from handlers.claim import claim_callback
 from handlers.media_handler import media_handler
 from handlers.vote import vote_callback
 
-# build app
+from handlers.chat_filter import chat_filter
+
 app = ApplicationBuilder().token(TOKEN).build()
 
-# commands
 app.add_handler(
     CommandHandler(
         "startgame",
@@ -37,12 +37,18 @@ app.add_handler(
 
 app.add_handler(
     CommandHandler(
+        "begin",
+        begin
+    )
+)
+
+app.add_handler(
+    CommandHandler(
         "mission",
         mission
     )
 )
 
-# claim button
 app.add_handler(
     CallbackQueryHandler(
         claim_callback,
@@ -50,7 +56,6 @@ app.add_handler(
     )
 )
 
-# vote button
 app.add_handler(
     CallbackQueryHandler(
         vote_callback,
@@ -58,7 +63,6 @@ app.add_handler(
     )
 )
 
-# media handler
 app.add_handler(
     MessageHandler(
         filters.PHOTO | filters.VIDEO,
@@ -66,7 +70,13 @@ app.add_handler(
     )
 )
 
+app.add_handler(
+    MessageHandler(
+        filters.TEXT & ~filters.COMMAND,
+        chat_filter
+    )
+)
+
 print("BOT RUNNING...")
 
-# run bot
 app.run_polling()
