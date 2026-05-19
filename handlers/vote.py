@@ -64,7 +64,6 @@ async def vote_callback(
     if not mission:
         return
 
-    # vote type
     vote_type = query.data.replace(
         "vote_",
         ""
@@ -72,7 +71,6 @@ async def vote_callback(
 
     mission["votes"][vote_type] += 1
 
-    # แสดงคะแนน
     votes = mission["votes"]
 
     text = (
@@ -83,3 +81,20 @@ async def vote_callback(
     )
 
     await query.edit_message_text(text)
+
+    total = (
+        votes["pass"] +
+        votes["fail"] +
+        votes["funny"]
+    )
+
+    if total >= 3:
+
+        room["active_mission"] = None
+
+        next_master(room)
+
+        await context.bot.send_message(
+            chat_id=chat_id,
+            text="🔄 NEXT MISSION"
+        )
