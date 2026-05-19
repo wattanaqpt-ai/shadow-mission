@@ -80,3 +80,9 @@ app.add_handler(
 print("BOT RUNNING...")
 
 app.run_polling()
+# import
+from handlers.endgame import endgame, endgame_vote_callback
+
+# handlers
+app.add_handler(CommandHandler("endgame", endgame))
+app.add_handler(CallbackQueryHandler(endgame_vote_callback, pattern="endvote_"))
