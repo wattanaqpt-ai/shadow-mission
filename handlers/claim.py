@@ -1,5 +1,6 @@
 from telegram import Update
 from telegram.ext import ContextTypes
+
 from core.rooms import rooms
 
 async def claim_callback(
@@ -21,10 +22,7 @@ async def claim_callback(
         return
 
     if mission["claimed"]:
-        await query.answer(
-            "❌ มีคนรับแล้ว",
-            show_alert=True
-        )
+        await query.answer("❌ มีคนรับแล้ว", show_alert=True)
         return
 
     mission["claimed"] = True
@@ -36,7 +34,9 @@ async def claim_callback(
     )
     room["scores"][user.id]["count"] += 1
 
-    await query.edit_message_text(
+    msg = await query.edit_message_text(
         "🎭 MISSION CLAIMED\n\n"
         "⏳ ส่งรูปหรือคลิป"
     )
+
+    room["message_ids"].append(query.message.message_id)
