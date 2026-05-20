@@ -8,7 +8,7 @@ async def auto_delete(
     chat_id,
     message_id
 ):
-    await asyncio.sleep(120)
+    await asyncio.sleep(30)
 
     try:
         await context.bot.delete_message(
