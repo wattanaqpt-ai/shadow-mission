@@ -12,7 +12,6 @@ async def media_handler(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE
 ):
-
     chat_id = update.effective_chat.id
     user = update.effective_user
 
@@ -59,6 +58,9 @@ async def media_handler(
 
     else:
         return
+
+    # เก็บ message_id ของรูป/คลิปที่รีโพสต์
+    room["message_ids"].append(repost.message_id)
 
     asyncio.create_task(
         auto_delete(
