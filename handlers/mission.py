@@ -20,29 +20,21 @@ async def mission(
         return
 
     if not room["started"]:
-        await update.message.reply_text(
-            "❌ เกมยังไม่เริ่ม"
-        )
+        await update.message.reply_text("❌ เกมยังไม่เริ่ม")
         return
 
     current_master = get_current_master(room)
     if user.id != current_master["id"]:
-        await update.message.reply_text(
-            "❌ ยังไม่ใช่ TURN ของคุณ"
-        )
+        await update.message.reply_text("❌ ยังไม่ใช่ TURN ของคุณ")
         return
 
     if room["active_mission"]:
-        await update.message.reply_text(
-            "❌ ยังมี MISSION ค้างอยู่"
-        )
+        await update.message.reply_text("❌ ยังมี MISSION ค้างอยู่")
         return
 
     text = " ".join(context.args)
     if not text:
-        await update.message.reply_text(
-            "/mission ข้อความ"
-        )
+        await update.message.reply_text("/mission ข้อความ")
         return
 
     room["active_mission"] = {
@@ -58,15 +50,12 @@ async def mission(
     }
 
     keyboard = [[
-        InlineKeyboardButton(
-            "🎯 ACCEPT",
-            callback_data="claim"
-        )
+        InlineKeyboardButton("🎯 ACCEPT", callback_data="claim")
     ]]
 
-    reply_markup = InlineKeyboardMarkup(keyboard)
-
-    await update.message.reply_text(
+    msg = await update.message.reply_text(
         f"🃏 {text}",
-        reply_markup=reply_markup
+        reply_markup=InlineKeyboardMarkup(keyboard)
     )
+
+    room["message_ids"].append(msg.message_id)
