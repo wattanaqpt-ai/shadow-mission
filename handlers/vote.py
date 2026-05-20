@@ -12,29 +12,22 @@ async def start_vote(
     context,
     chat_id
 ):
-    keyboard = [
-        [
-            InlineKeyboardButton(
-                "✅ PASS",
-                callback_data="vote_pass"
-            ),
-            InlineKeyboardButton(
-                "❌ FAIL",
-                callback_data="vote_fail"
-            ),
-            InlineKeyboardButton(
-                "😂 FUNNY",
-                callback_data="vote_funny"
-            )
-        ]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
+    room = rooms.get(chat_id)
 
-    await context.bot.send_message(
+    keyboard = [[
+        InlineKeyboardButton("✅ PASS", callback_data="vote_pass"),
+        InlineKeyboardButton("❌ FAIL", callback_data="vote_fail"),
+        InlineKeyboardButton("😂 FUNNY", callback_data="vote_funny")
+    ]]
+
+    msg = await context.bot.send_message(
         chat_id=chat_id,
         text="🗳 RESULT?",
-        reply_markup=reply_markup
+        reply_markup=InlineKeyboardMarkup(keyboard)
     )
+
+    if room:
+        room["message_ids"].append(msg.message_id)
 
 async def vote_callback(
     update: Update,
@@ -44,6 +37,7 @@ async def vote_callback(
     await query.answer()
 
     chat_id = query.message.chat.id
+    user = query.from_user
     room = rooms.get(chat_id)
 
     if not room:
@@ -52,6 +46,15 @@ async def vote_callback(
     mission = room["active_mission"]
     if not mission:
         return
+
+    if "voted_users" not in mission:
+        mission["voted_users"] = []
+
+    if user.id in mission["voted_users"]:
+        await query.answer("❌ โหวตแล้ว", show_alert=True)
+        return
+
+    mission["voted_users"].append(user.id)
 
     vote_type = query.data.replace("vote_", "")
     mission["votes"][vote_type] += 1
@@ -74,7 +77,7 @@ async def vote_callback(
 
         current_master = get_current_master(room)
 
-        await context.bot.send_message(
+        msg = await context.bot.send_message(
             chat_id=chat_id,
             text=(
                 f"🔄 NEXT MISSION\n\n"
@@ -82,3 +85,5 @@ async def vote_callback(
                 f"พิมพ์ /mission ข้อความ"
             )
         )
+
+        room["message_ids"].append(msg.message_id)
