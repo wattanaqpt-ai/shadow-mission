@@ -17,6 +17,12 @@ async def claim_callback(
     if not room:
         return
 
+    # เช็คว่าเป็น slave เท่านั้น
+    slave_ids = [s["id"] for s in room["slaves"]]
+    if user.id not in slave_ids:
+        await query.answer("❌ เฉพาะ Slave เท่านั้น", show_alert=True)
+        return
+
     mission = room["active_mission"]
     if not mission:
         return
@@ -34,7 +40,7 @@ async def claim_callback(
     )
     room["scores"][user.id]["count"] += 1
 
-    msg = await query.edit_message_text(
+    await query.edit_message_text(
         "🎭 MISSION CLAIMED\n\n"
         "⏳ ส่งรูปหรือคลิป"
     )
