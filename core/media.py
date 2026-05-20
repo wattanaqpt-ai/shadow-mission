@@ -25,13 +25,12 @@ async def auto_delete(
     if not room["active_mission"]:
         return
 
-    # เคลียร์ mission และเปลี่ยน master
     room["active_mission"] = None
     next_master(room)
 
     current_master = get_current_master(room)
 
-    await context.bot.send_message(
+    msg = await context.bot.send_message(
         chat_id=chat_id,
         text=(
             f"⏰ หมดเวลา — MISSION ถูกยกเลิก\n\n"
@@ -39,3 +38,5 @@ async def auto_delete(
             f"พิมพ์ /mission ข้อความ"
         )
     )
+
+    room["message_ids"].append(msg.message_id)
